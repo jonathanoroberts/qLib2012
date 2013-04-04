@@ -6,7 +6,7 @@ from psychopy import visual,event,core
 import random
 from qLib.qLib import *
 
-
+#
 #create a psychoPy window
 myWin = visual.Window(fullscr=False,size=(1024,768 ),winType='pyglet')
 
