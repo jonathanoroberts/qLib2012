@@ -6,7 +6,8 @@ import time,glob,random
 from psychopy import visual,event,core
 import pyglet
 import wx, re
-pngPath = 'qLib/'
+import os
+pngPath = os.path.dirname(__file__)+'/'
 
 class TextEntryDialog(wx.Dialog):
     def __init__(self, parent, title, caption, size, initialText=None, select=None, readOnly = False):
@@ -1001,13 +1002,13 @@ if __name__ == '__main__':
     myWin = visual.Window(fullscr=False,size=( 1024,768 ),color='grey',winType='pyglet')
 
     someText =  visual.TextStim(myWin,units = 'norm', text='Here is some text', alignHoriz = 'center', height=.1, color = 'blue', pos=(0,.5))
-    print textField(myWin,label='Enter a number',labelColor='lightblue',drawList=[someText],pos=(0,-.5),type='float')
-    print bars(myWin,limits=[-10,10],height=1,nBars=5,width=.5,drawList=[someText], labels=['a','b','c','d','e'],barColors=['red','white','white','white','blue'],yLabels=['democrat','moderate','republican'], yLabelColors=['lightblue','white','pink'])
-    print bars(myWin,forceChoice=False,nBars=5,width=.7,height=.5,drawList=[someText], labels=['a','b','c','d','e'],yLabels=['a pretty\nlong label'], defaultHeight=[20,30,40,50,60])
-    print textInput(myWin, drawList = [someText])
+    print textDialog(myWin, clock=None, wsize=(.5,.5),caption='This is the caption', initialText='this is initialText', select=False,readOnly = False)
     print textDialog(myWin,readOnly = True,caption='What do\nyou want\nto say?', initialText='enter your response here\nenter your response here\na\na\na\na\na\na\na\na\na\na\na\na\na\na\na\na\na\na\na\na\na\na\na\na\na\na\na\n')
-    print multiChoice(myWin,drawList = [someText], vPos=0.2,labels = ['Now is','the time for','all good','men to come','to the','aid','of their party'])
-    print choice(myWin,drawList = [someText], vPos=0.2,labels = ['Now is','the time for','all good','men to come','to the','aid','of their party'])
     print slider(myWin, forceChoice = False, sliderLoc = -0.6, drawList = [someText], limits = [-500,500], start=0, snap2labels=True ,snap2mouse=True , feedback=True, feedbackDigits=1, labels = ['less','','','','','about\nthe\nsame','','','','','more'])
     print scale(myWin, drawList = [someText], nButtons = 7, scaleLoc=-.6, numberButtons=True, forceChoice = False, labels = ['less','or','more'])
-    print textDialog(myWin, clock=None, wsize=(.5,.5),caption='This is the caption', initialText='this is initialText', select=False,readOnly = False)
+    print bars(myWin,limits=[-10,10],height=1,nBars=5,width=.5,drawList=[someText], labels=['a','b','c','d','e'],barColors=['red','white','white','white','blue'],yLabels=['democrat','moderate','republican'], yLabelColors=['lightblue','white','pink'])
+    print bars(myWin,forceChoice=False,nBars=5,width=.7,height=.5,drawList=[someText], labels=['a','b','c','d','e'],yLabels=['a pretty\nlong label'], defaultHeight=[20,30,40,50,60])
+    print choice(myWin,drawList = [someText], vPos=0.2,labels = ['Now is','the time for','all good','men to come','to the','aid','of their party'])
+    print multiChoice(myWin,drawList = [someText], vPos=0.2,labels = ['Now is','the time for','all good','men to come','to the','aid','of their party'])
+    print textInput(myWin, drawList = [someText])
+    print textField(myWin,label='Enter a number',labelColor='lightblue',drawList=[someText],pos=(0,-.5),type='float')
