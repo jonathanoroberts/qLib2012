@@ -57,7 +57,12 @@ class TextEntryDialog(wx.Dialog):
             print 'problem with textDialog...'
             return 'error'
     
-def textDialog(window, clock=None, wsize=(.8,.5), caption='', initialText='enter text here', select=None,readOnly = False):
+def textDialog(window, clock=None,
+                         wsize=(.8,.5),
+                         caption='',
+                         initialText='enter text here',
+                         select=None,
+                         readOnly = False):
     """Present a trial with a pop-up box that allows for text entry. Once text exceeds the entry window size, scrolling is enabled.
         allows for specification of pop-up size, static text (i.e. a question) that remains above the entry window, and initial text within
         the entry window (which can be replaced upon entry of text, or not).
@@ -90,6 +95,7 @@ def textDialog(window, clock=None, wsize=(.8,.5), caption='', initialText='enter
     response = dlg.show()
     rt = clock.getTime() - startTime
     window.flip()
+    dlg.Destroy()
     return response, rt
 
 def rbClicked(x = None, y = None, object = None, extendRight=False):
@@ -107,8 +113,8 @@ def rbClicked(x = None, y = None, object = None, extendRight=False):
         return False
 
 
-def slider(window,drawList = [],
-                clock = None,
+def slider(window,clock = None,
+                drawList = [],
                 width = 0.8,
                 limits = [0, 100],
                 start = None,
@@ -265,8 +271,8 @@ def slider(window,drawList = [],
     window.flip()
     return round(value,feedbackDigits), rt
 
-def scale(window,drawList = [],
-                clock = None,
+def scale(window,clock = None,
+                drawList = [],
                 width = 0.8,
                 labels = ['left', 'right'],
                 labelColor = 'white',
@@ -274,7 +280,7 @@ def scale(window,drawList = [],
                 numberButtons = False,
                 forceChoice=True,
                 scaleLoc = -0.6):
-    """ Present a trial with a scale for response. The subject clocks on a scale button to hiligght it,
+    """ Present a trial with a scale for response. The subject clicks on a scale button to highlight it,
     and then selects a value by clicking the Next button. Returns the
     number of the button highlighted when the Next button is clicked.
     
@@ -288,6 +294,7 @@ def scale(window,drawList = [],
         nButtons -- the number of buttons in the scale
         numberButtons -- If True then the buttons will be numbered
         forceChoice -- If True, require the subject to select a scale button before displaying the Next button. (default True)
+        scaleLoc -- vertical position of the scal in "norm" units. (default -0.6)
     """
     def drawAll():
         """ Draw all the objects that make up a slider trial """
@@ -390,8 +397,8 @@ def scale(window,drawList = [],
     window.flip()
     return selected, rt
 
-def bars(window,drawList = [],
-                clock = None,
+def bars(window,clock = None,
+                drawList = [],
                 width = 0.8,
                 height = 0.8,
                 labels = None,
@@ -615,9 +622,10 @@ def bars(window,drawList = [],
     window.flip()
     return settings,rt
 
-def choice(window,drawList=[],
-                    clock = None,
-                    vPos = 0.0, hPos = -0.2,
+def choice(window,clock = None,
+                    drawList=[],
+                    vPos = 0.0,
+                    hPos = -0.2,
                     labels=['a','b','c','d','e'],
                     labelColor='white',
                     labelSize=0.1,
@@ -717,8 +725,8 @@ def choice(window,drawList=[],
     window.flip()
     return selected, rt
 
-def multiChoice(window,drawList=[],
-                    clock = None,
+def multiChoice(window,clock = None,
+                    drawList=[],
                     vPos = 0.0, hPos = -0.2,
                     labels=['a','b','c','d','e'],
                     labelColor='white',
@@ -817,7 +825,13 @@ def multiChoice(window,drawList=[],
     return selected, rt
 
 
-def textInput(window, clock=None, drawList=[], prompt='Enter your response:', promptHeight=0.065, promptOffset = 0.1, promptColor='white', boxTop=0.0):
+def textInput(window, clock=None,
+                      drawList=[],
+                      prompt='Enter your response:',
+                      promptHeight=0.065,
+                      promptOffset = 0.1,
+                      promptColor='white',
+                      boxTop=0.0):
     boxWidth=0.8
     promptPos= (-boxWidth, boxTop+promptOffset)
     if not clock:
@@ -899,7 +913,14 @@ def textInput(window, clock=None, drawList=[], prompt='Enter your response:', pr
     window.flip()
     return message,rt
 
-def textField(window=None, clock=None, label = None, labelColor = 'black', drawList=[], text='number', maxChars=8,size=.1, pos=[0,0], type='string'):
+def textField(window, clock=None,
+                      label = 'your label',
+                      labelColor = 'black',
+                      drawList=[],
+                      text='',
+                      maxChars=12,
+                      size=.1, pos=[0,0],
+                      type='string'):
     """ Present a trial with text field box (one line - limited length). 
     Returns the entered text and the time when the next button is pressed. 
     
@@ -950,7 +971,7 @@ def textField(window=None, clock=None, label = None, labelColor = 'black', drawL
         if type == 'float' and text == '.' and '.' in message:
             text = ''
         
-        if len(message)<8:
+        if len(message)<maxChars:
             message += text
             tstim.setText(message)
     
