@@ -883,7 +883,6 @@ def textInput(window, clock=None,
     mouse = event.Mouse(win=window)
     done = False
     startTime = clock.getTime()
-    shiftPress = False
     
     orig_on_text = window.winHandle.on_text
     window.winHandle.on_text = myTextHandler
@@ -912,6 +911,148 @@ def textInput(window, clock=None,
     del window.winHandle.on_text_motion
     window.flip()
     return message,rt
+
+class Field():
+    def __init__(self, window, type='string', maxChars=12, size=0.1, text=None, label=None, labelColor='black', pos=[0,0]):
+        width = (size*0.6) * maxChars
+        self.charsTyped = False
+        self.text = text
+        self.type = type
+        self.maxChars = maxChars
+        self.tstim = visual.TextStim(window,text=text,font='Arial',height=size,alignHoriz='left',color='black', pos=(pos[0]+.02,pos[1]))
+        self.writeBox=visual.ShapeStim(window, lineWidth=2.0, lineColor='black', fillColor='white', vertices=( (pos[0]+.01,pos[1]-size/2-.01), (pos[0]+.01+width,pos[1]-size/2-.01), (pos[0]+.01+width,pos[1]+size/2), (pos[0]+.01,pos[1]+size/2) ), closeShape=True)
+        self.label = label
+        if self.label != None: self.labelStim =  visual.TextStim(window, text=self.label, alignHoriz = 'right', height=.1, color = labelColor, pos=pos)
+        if type != 'string':
+            if type == 'letters':
+                self.checkInput = re.compile('[a-z]|[A-Z]')
+            elif type == 'int':
+                if self.text != None: test = int(self.text)
+                self.checkInput = re.compile('[0-9]')
+            elif type == 'float':
+                if self.text != None: test = float(self.text)
+                self.checkInput = re.compile('[0-9.]')
+    
+    def textHandler(self, text):
+        if not self.charsTyped:
+            self.text = ''
+            self.charsTyped = True
+        if len(self.text) < self.maxChars:
+            if self.type != 'string':
+                if not self.checkInput.match(text):
+                    text = ''
+            if text == chr(13):
+                text = ''
+            if self.type == 'float' and text == '.' and '.' in self.text:
+                text = ''
+            self.text += text
+            self.tstim.setText(self.text)
+            
+    def textMotionHandler(self, motion):
+        if not self.charsTyped:
+            self.text = ''
+            self.charsTyped = True
+        if motion == pyglet.window.key.MOTION_BACKSPACE:
+            self.text = self.text[0:-1]
+        self.tstim.setText(self.text)
+        
+    def draw(self):
+        self.writeBox.draw()
+        self.tstim.draw()
+        if self.label != None: self.labelStim.draw()
+        
+    def getResponse(self):
+        response = self.text
+#        if self.type == 'int' and len(self.text) > 0: response = int(self.text)
+#        elif self.type == 'float' and len(self.text) > 0: response = float(self.text)
+        return response
+
+def form(window, clock=None,
+                      drawList=[],
+                      fields = [ ['label1', 'black', 'L1', 12, 'string'], ['label2', 'black', '3.2', 12, 'string'] ],
+                      size=.1,
+                      pos = [0,0]):
+    """ Present a trial with multiple text fields. 
+    Returns the entered text and the time when the next button is pressed. 
+    
+    Keyword arguments:
+        window -- The parent window within which the text input box is drawn
+        clock -- If provided, the psychopy clock object will be used for timing. If not, one will be created.
+        drawList -- A list of objects that should be drawn along with the slider
+        fields -- a list of field descriptor lists. Each field descriptor list must have the 5 following elements:
+              label - the text label to appear to the left of the field
+              labelColor - color of the text label
+              text - Initial text that appears in the box - will be replaced by typed characters. (default = empty)
+              maxChars - Maximum nuber of characters (default = 12)
+              type - Limit the entered data by limiting input to valid characters - 'string', 'letters', 'int', or 'float' (default: string (any characters))
+        size -- The size of the text (default = 0.1)
+        pos -- Position of the left edge of the first field box (default = [0,0])
+        
+    """
+    if not clock:
+        clock=core.Clock()
+    formFields = []
+    x, y = pos
+    for field in fields:
+        label, labelColor, text, max, type = field
+        fieldpos = [x, y]
+        y -= (size + 0.03)
+        formFields.append(Field(window, label=label, maxChars=max, pos=fieldpos, type=type, text=text))
+    activeField = formFields[0]
+    next = visual.ImageStim(window,image=pngPath+'next.png', units = 'norm', pos=(0,-0.9))
+
+    def drawAll():
+        for item in drawList:
+            item.draw()
+        for field in formFields:
+            activeField.writeBox.lineWidth=4
+            field.draw()
+            activeField.writeBox.lineWidth=1
+        next.draw()
+        
+    def myTextHandler(text):
+        activeField.textHandler(text)
+    def myTextMotionHandler(motion):
+        activeField.textMotionHandler(motion)
+    
+
+    mouse = event.Mouse(win=window)
+    done = False
+    startTime = clock.getTime()
+    
+    orig_on_text = window.winHandle.on_text
+    window.winHandle.on_text =myTextHandler
+    window.winHandle.on_text_motion = myTextMotionHandler
+    while (not done):
+        drawAll()
+        window.flip()
+        if mouse.getPressed()[0] == 1:
+            x,y = mouse.getPos()
+            for field in formFields:
+                if visual.helpers.pointInPolygon(x,y,field.writeBox):
+                    activeField = field
+            if next.contains(x,y):
+                clickTime = clock.getTime()
+                next.setImage(pngPath+'darknext.png')
+                while mouse.getPressed()[0] == 1:
+                    drawAll()
+                    window.flip()
+                    x,y = mouse.getPos()
+                    if next.contains(x,y):
+                        next.setImage(pngPath+'darknext.png')
+                    else:
+                        next.setImage(pngPath+'next.png')
+                x,y = mouse.getPos()
+                if next.contains(x,y): 
+                    rt = clickTime - startTime
+                    done = True 
+    window.winHandle.on_text = orig_on_text
+    del window.winHandle.on_text_motion
+    window.flip()
+    responses = []
+    for field in formFields:
+        responses.append(field.getResponse())
+    return responses,rt
 
 def textField(window, clock=None,
                       label = 'your label',
@@ -931,92 +1072,13 @@ def textField(window, clock=None,
         label -- text label to be placed to the left of the field
         labelColor -- color of the text label
         text -- Initial text that appears in the box - will be replaced by typed characters. (default = empty)
-        size -- The size of the text (default = 0.1)
         maxChars -- Maximum nuber of characters (default = 8)
+        size -- The size of the text (default = 0.1)
         pos -- Position of the left edge of the box - centered vertically (default = [0,0])
         type -- Limit the entered data by limiting input to valid characters - 'string', 'letters', 'int', or 'float' (default: string (any characters))
     """
-    if not clock:
-        clock=core.Clock()
-    width = (size*0.6) * maxChars
-    tstim = visual.TextStim(window,text=text,font='Arial',height=size,alignHoriz='left',color='black', pos=(pos[0]+.02,pos[1]))
-    writeBox=visual.ShapeStim(window, lineWidth=2.0, lineColor='black', fillColor='white', vertices=( (pos[0]+.01,pos[1]-size/2-.01), (pos[0]+.01+width,pos[1]-size/2-.01), (pos[0]+.01+width,pos[1]+size/2), (pos[0]+.01,pos[1]+size/2) ), closeShape=True)
-    if label != None: labelStim =  visual.TextStim(window, text=label, alignHoriz = 'right', height=.1, color = labelColor, pos=pos)
+    return form(window=window, drawList=drawList, fields = [ [label, labelColor, text, maxChars, type] ], size = size, pos = pos )
     
-    global message
-    message = ''
-    next = visual.ImageStim(window,image=pngPath+'next.png', units = 'norm', pos=(0,-0.9))
-    global checkInput
-    if type != 'string':
-        if type == 'letters':
-            checkInput = re.compile('[a-z]|[A-Z]')
-        elif type == 'int':
-            checkInput = re.compile('[0-9]')
-        elif type == 'float':
-            checkInput = re.compile('[0-9.]')
-    def drawAll():
-        for item in drawList:
-            item.draw()
-        writeBox.draw()
-        tstim.draw()
-        if label != None: labelStim.draw()
-        next.draw()
-
-    def myTextHandler(text):
-        global message
-        if type != 'string':
-            if not checkInput.match(text):
-                text = ''
-        if text == chr(13): text = ''
-        if type == 'float' and text == '.' and '.' in message:
-            text = ''
-        
-        if len(message)<maxChars:
-            message += text
-            tstim.setText(message)
-    
-    def myTextMotionHandler(motion):
-        global message
-        if motion == pyglet.window.key.MOTION_BACKSPACE:
-            message = message[0:-1]
-        tstim.setText(message)
-    
-
-    mouse = event.Mouse(win=window)
-    done = False
-    startTime = clock.getTime()
-    shiftPress = False
-    
-    orig_on_text = window.winHandle.on_text
-    window.winHandle.on_text = myTextHandler
-    window.winHandle.on_text_motion = myTextMotionHandler
-    while (not done):
-        drawAll()
-        window.flip()
-        if mouse.getPressed()[0] == 1:
-            x,y = mouse.getPos()
-            if next.contains(x,y):
-                clickTime = clock.getTime()
-                next.setImage(pngPath+'darknext.png')
-                while mouse.getPressed()[0] == 1:
-                    drawAll()
-                    window.flip()
-                    x,y = mouse.getPos()
-                    if next.contains(x,y):
-                        next.setImage(pngPath+'darknext.png')
-                    else:
-                        next.setImage(pngPath+'next.png')
-                x,y = mouse.getPos()
-                if next.contains(x,y): 
-                    rt = clickTime - startTime
-                    done = True 
-    window.winHandle.on_text = orig_on_text
-    del window.winHandle.on_text_motion
-    if type == 'int' and len(message) > 0: message = int(message)
-    elif type == 'float' and len(message) > 0: message = float(message)
-    window.flip()
-    return message,rt
-
 # The code below is used only for running qLib.py as a standalone program. 
 if __name__ == '__main__':
     pngPath = ''
