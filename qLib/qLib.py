@@ -1,6 +1,6 @@
 ##
 # CLIPR PsychoPy questionnaire library
-# version 2.1
+# version 2.2
 
 import time,glob,random
 from psychopy import visual,event,core
