@@ -920,7 +920,8 @@ class Field():
         self.type = type
         self.maxChars = maxChars
         self.tstim = visual.TextStim(window,text=text,font='Arial',height=size,alignHoriz='left',color='black', pos=(pos[0]+.02,pos[1]))
-        self.writeBox=visual.ShapeStim(window, lineWidth=2.0, lineColor='black', fillColor='white', vertices=( (pos[0]+.01,pos[1]-size/2-.01), (pos[0]+.01+width,pos[1]-size/2-.01), (pos[0]+.01+width,pos[1]+size/2), (pos[0]+.01,pos[1]+size/2) ), closeShape=True)
+#        self.writeBox=visual.ShapeStim(window, lineWidth=2.0, lineColor='black', fillColor='white', vertices=( (pos[0]+.01,pos[1]-size/2-.01), (pos[0]+.01+width,pos[1]-size/2-.01), (pos[0]+.01+width,pos[1]+size/2), (pos[0]+.01,pos[1]+size/2) ), closeShape=True)
+        self.writeBox=visual.Rect(window, lineWidth=2.0, height=size+0.01, width = width,lineColor='black', fillColor='white', pos = (pos[0]+0.01+(width/2), pos[1]-0.01), closeShape=True)
         self.label = label
         if self.label != None: self.labelStim =  visual.TextStim(window, text=self.label, alignHoriz = 'right', height=.1, color = labelColor, pos=pos)
         if type != 'string':
@@ -1029,7 +1030,7 @@ def form(window, clock=None,
         if mouse.getPressed()[0] == 1:
             x,y = mouse.getPos()
             for field in formFields:
-                if visual.helpers.pointInPolygon(x,y,field.writeBox):
+                if field.writeBox.contains(x,y):
                     activeField = field
             if next.contains(x,y):
                 clickTime = clock.getTime()
@@ -1079,19 +1080,3 @@ def textField(window, clock=None,
     """
     return form(window=window, drawList=drawList, fields = [ [label, labelColor, text, maxChars, type] ], size = size, pos = pos )
     
-# The code below is used only for running qLib.py as a standalone program. 
-if __name__ == '__main__':
-    pngPath = ''
-    myWin = visual.Window(fullscr=False,size=( 1024,768 ),color='grey',winType='pyglet')
-
-    someText =  visual.TextStim(myWin,units = 'norm', text='Here is some text', alignHoriz = 'center', height=.1, color = 'blue', pos=(0,.5))
-    print textDialog(myWin, clock=None, wsize=(.5,.5),caption='This is the caption', initialText='this is initialText', select=False,readOnly = False)
-    print textDialog(myWin,readOnly = True,caption='What do\nyou want\nto say?', initialText='enter your response here\nenter your response here\na\na\na\na\na\na\na\na\na\na\na\na\na\na\na\na\na\na\na\na\na\na\na\na\na\na\na\n')
-    print slider(myWin, forceChoice = False, sliderLoc = -0.6, drawList = [someText], limits = [-500,500], start=0, snap2labels=True ,snap2mouse=True , feedback=True, feedbackDigits=1, labels = ['less','','','','','about\nthe\nsame','','','','','more'])
-    print scale(myWin, drawList = [someText], nButtons = 7, scaleLoc=-.6, numberButtons=True, forceChoice = False, labels = ['less','or','more'])
-    print bars(myWin,limits=[-10,10],height=1,nBars=5,width=.5,drawList=[someText], labels=['a','b','c','d','e'],barColors=['red','white','white','white','blue'],yLabels=['democrat','moderate','republican'], yLabelColors=['lightblue','white','pink'])
-    print bars(myWin,forceChoice=False,nBars=5,width=.7,height=.5,drawList=[someText], labels=['a','b','c','d','e'],yLabels=['a pretty\nlong label'], defaultHeight=[20,30,40,50,60])
-    print choice(myWin,drawList = [someText], vPos=0.2,labels = ['Now is','the time for','all good','men to come','to the','aid','of their party'])
-    print multiChoice(myWin,drawList = [someText], vPos=0.2,labels = ['Now is','the time for','all good','men to come','to the','aid','of their party'])
-    print textInput(myWin, drawList = [someText])
-    print textField(myWin,label='Enter a number',labelColor='lightblue',drawList=[someText],pos=(0,-.5),type='float')
