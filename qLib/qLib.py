@@ -1,6 +1,11 @@
-##
-# CLIPR PsychoPy questionnaire library
-# version 2.21
+__version__ = 'version 2.22'
+''' QLib - CLIPR PsychoPy questionnaire library
+Author:
+Jonathan O. Roberts (with help from CLIPR TAs Katie Wolsiefer and Holen Katz)
+Computer Laboratory for Instruction in Psychological Research
+Department of Psychology and Neuroscience
+University of Colorado Boulder
+'''
 
 import time,glob,random
 from psychopy import visual,event,core
@@ -913,24 +918,26 @@ def textInput(window, clock=None,
     return message,rt
 
 class Field():
-    def __init__(self, window, type='string', maxChars=12, size=0.1, text=None, label=None, labelColor='black', pos=[0,0]):
+    def __init__(self, window, fieldtype='string', maxChars=12, size=0.1, text=None, label=None, labelColor='black', pos=[0,0]):
         width = (size*0.6) * maxChars
         self.charsTyped = False
         self.text = text
-        self.type = type
+        if self.text is not None:
+            self.text = str(self.text)
+        self.fieldtype = fieldtype
         self.maxChars = maxChars
         self.tstim = visual.TextStim(window,text=text,font='Arial',height=size,alignHoriz='left',color='black', pos=(pos[0]+.02,pos[1]))
 #        self.writeBox=visual.ShapeStim(window, lineWidth=2.0, lineColor='black', fillColor='white', vertices=( (pos[0]+.01,pos[1]-size/2-.01), (pos[0]+.01+width,pos[1]-size/2-.01), (pos[0]+.01+width,pos[1]+size/2), (pos[0]+.01,pos[1]+size/2) ), closeShape=True)
         self.writeBox=visual.Rect(window, lineWidth=2.0, height=size+0.01, width = width,lineColor='black', fillColor='white', pos = (pos[0]+0.01+(width/2), pos[1]-0.01), closeShape=True)
         self.label = label
         if self.label != None: self.labelStim =  visual.TextStim(window, text=self.label, alignHoriz = 'right', height=.1, color = labelColor, pos=pos)
-        if type != 'string':
-            if type == 'letters':
+        if fieldtype != 'string':
+            if fieldtype == 'letters':
                 self.checkInput = re.compile('[a-z]|[A-Z]')
-            elif type == 'int':
+            elif fieldtype == 'int':
                 if self.text != None: test = int(self.text)
                 self.checkInput = re.compile('[0-9]')
-            elif type == 'float':
+            elif fieldtype == 'float':
                 if self.text != None: test = float(self.text)
                 self.checkInput = re.compile('[0-9.]')
     
@@ -939,12 +946,12 @@ class Field():
             self.text = ''
             self.charsTyped = True
         if len(self.text) < self.maxChars:
-            if self.type != 'string':
+            if self.fieldtype != 'string':
                 if not self.checkInput.match(text):
                     text = ''
             if text == chr(13):
                 text = ''
-            if self.type == 'float' and text == '.' and '.' in self.text:
+            if self.fieldtype == 'float' and text == '.' and '.' in self.text:
                 text = ''
             self.text += text
             self.tstim.setText(self.text)
@@ -964,8 +971,8 @@ class Field():
         
     def getResponse(self):
         response = self.text
-#        if self.type == 'int' and len(self.text) > 0: response = int(self.text)
-#        elif self.type == 'float' and len(self.text) > 0: response = float(self.text)
+#        if self.fieldtype == 'int' and len(self.text) > 0: response = int(self.text)
+#        elif self.fieldtype == 'float' and len(self.text) > 0: response = float(self.text)
         return response
 
 def form(window, clock=None,
@@ -985,7 +992,7 @@ def form(window, clock=None,
               labelColor - color of the text label
               text - Initial text that appears in the box - will be replaced by typed characters. (default = empty)
               maxChars - Maximum nuber of characters (default = 12)
-              type - Limit the entered data by limiting input to valid characters - 'string', 'letters', 'int', or 'float' (default: string (any characters))
+              fieldtype - Limit the entered data by limiting input to valid characters - 'string', 'letters', 'int', or 'float' (default: string (any characters))
         size -- The size of the text (default = 0.1)
         pos -- Position of the left edge of the first field box (default = [0,0])
         
@@ -995,10 +1002,10 @@ def form(window, clock=None,
     formFields = []
     x, y = pos
     for field in fields:
-        label, labelColor, text, max, type = field
+        label, labelColor, text, max, fieldtype = field
         fieldpos = [x, y]
         y -= (size + 0.03)
-        formFields.append(Field(window, label=label, maxChars=max, pos=fieldpos, type=type, text=text))
+        formFields.append(Field(window, label=label, maxChars=max, pos=fieldpos, fieldtype=fieldtype, text=text))
     activeField = formFields[0]
     next = visual.ImageStim(window,image=pngPath+'next.png', units = 'norm', pos=(0,-0.9))
 
@@ -1059,10 +1066,10 @@ def textField(window, clock=None,
                       label = 'your label',
                       labelColor = 'black',
                       drawList=[],
-                      text='',
+                      text=None,
                       maxChars=12,
                       size=.1, pos=[0,0],
-                      type='string'):
+                      fieldtype='string'):
     """ Present a trial with text field box (one line - limited length). 
     Returns the entered text and the time when the next button is pressed. 
     
@@ -1076,7 +1083,7 @@ def textField(window, clock=None,
         maxChars -- Maximum nuber of characters (default = 8)
         size -- The size of the text (default = 0.1)
         pos -- Position of the left edge of the box - centered vertically (default = [0,0])
-        type -- Limit the entered data by limiting input to valid characters - 'string', 'letters', 'int', or 'float' (default: string (any characters))
+        fieldtype -- Limit the entered data by limiting input to valid characters - 'string', 'letters', 'int', or 'float' (default: string (any characters))
     """
-    return form(window=window, drawList=drawList, fields = [ [label, labelColor, text, maxChars, type] ], size = size, pos = pos )
+    return form(window=window, drawList=drawList, fields = [ [label, labelColor, text, maxChars, fieldtype] ], size = size, pos = pos )
     
