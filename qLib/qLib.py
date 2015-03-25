@@ -1,4 +1,4 @@
-__version__ = 'version 2.22'
+__version__ = 'version 2.23'
 ''' QLib - CLIPR PsychoPy questionnaire library
 Author:
 Jonathan O. Roberts (with help from CLIPR TAs Katie Wolsiefer and Holen Katz)
@@ -979,7 +979,8 @@ def form(window, clock=None,
                       drawList=[],
                       fields = [ ['label1', 'black', 'L1', 12, 'string'], ['label2', 'black', '3.2', 12, 'string'] ],
                       size=.1,
-                      pos = [0,0]):
+                      pos = [0,0],
+                      timeout = None):
     """ Present a trial with multiple text fields. 
     Returns the entered text and the time when the next button is pressed. 
     
@@ -995,6 +996,7 @@ def form(window, clock=None,
               fieldtype - Limit the entered data by limiting input to valid characters - 'string', 'letters', 'int', or 'float' (default: string (any characters))
         size -- The size of the text (default = 0.1)
         pos -- Position of the left edge of the first field box (default = [0,0])
+        timeout -- number of seconds after which to time out (default = None)
         
     """
     if not clock:
@@ -1026,6 +1028,9 @@ def form(window, clock=None,
 
     mouse = event.Mouse(win=window)
     done = False
+    if timeout != None:
+        tclock = core.Clock()
+        tclock.reset()
     startTime = clock.getTime()
     
     orig_on_text = window.winHandle.on_text
@@ -1034,6 +1039,9 @@ def form(window, clock=None,
     while (not done):
         drawAll()
         window.flip()
+        if timeout != None and tclock.getTime() > timeout:
+            rt= -99
+            done = True
         if mouse.getPressed()[0] == 1:
             x,y = mouse.getPos()
             for field in formFields:
@@ -1069,7 +1077,8 @@ def textField(window, clock=None,
                       text=None,
                       maxChars=12,
                       size=.1, pos=[0,0],
-                      fieldtype='string'):
+                      fieldtype='string',
+                      timeout = None):
     """ Present a trial with text field box (one line - limited length). 
     Returns the entered text and the time when the next button is pressed. 
     
@@ -1084,6 +1093,7 @@ def textField(window, clock=None,
         size -- The size of the text (default = 0.1)
         pos -- Position of the left edge of the box - centered vertically (default = [0,0])
         fieldtype -- Limit the entered data by limiting input to valid characters - 'string', 'letters', 'int', or 'float' (default: string (any characters))
+        timeout -- number of seconds after which to time out default = None)
     """
-    return form(window=window, drawList=drawList, fields = [ [label, labelColor, text, maxChars, fieldtype] ], size = size, pos = pos )
+    return form(window=window, drawList=drawList, fields = [ [label, labelColor, text, maxChars, fieldtype] ], size = size, pos = pos, timeout = timeout )
     

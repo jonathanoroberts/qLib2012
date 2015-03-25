@@ -28,7 +28,7 @@ event.waitKeys(keyList=['space'])
 # see the QLib.py file for documentation
 
 someText.setText('question fieldtype - integer textField')
-print textField(window=myWin,drawList=[someText], text=None, fieldtype='int')
+print textField(window=myWin,drawList=[someText], text=None, fieldtype='int',timeout=3.5)
 core.wait(.5)
 
 someText.setText('question fieldtype - form')
