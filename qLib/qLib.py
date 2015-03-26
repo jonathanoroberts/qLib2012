@@ -85,7 +85,7 @@ def textDialog(window, clock=None,
                                 change the value. (default False)
         size -- 
     
-"""
+    """
     if select == None:
         if readOnly:
             select = False
@@ -101,7 +101,9 @@ def textDialog(window, clock=None,
     rt = clock.getTime() - startTime
     window.flip()
     dlg.Destroy()
-    return response, rt
+    responseStatus = 'click'
+    touched = 'na'
+    return response, rt, responseStatus, touched
 
 def rbClicked(x = None, y = None, object = None, extendRight=False):
     """ Check to see if the click location (x,y) is within the bounds of object
@@ -131,7 +133,8 @@ def slider(window,clock = None,
                 feedbackColor = 'lightblue',
                 labelColor = 'white',
                 sliderLoc = -0.7,
-                forceChoice = True):
+                forceChoice = False,
+                nextKey = None):
     """ Present a trial with a slider for response. The subject  can move the slider back and forth,
     with or without feedback, and then selects a value by clicking the Next button. Returns the
     value of the slider when the Next button is clicked.
@@ -153,7 +156,8 @@ def slider(window,clock = None,
         feedbackColor -- Color of the feedback number (default 'lightblue')
         labelColor -- Color of the label text (default 'white')
         sliderLoc -- vertical position in norm units (-1 to +1) of the slider (default -0.7)
-        forceChoice -- if True, requires the participant to click the slider before the next button is made visible
+        forceChoice -- if True, requires the participant to click the slider before the next button is made visible (default False)
+        nextKey -- psychopy keyname for a key to substitute for clicking the 'Next' button (default = None)
     """
     def drawAll():
         """ Draw all the objects that make up a slider trial """
@@ -161,10 +165,9 @@ def slider(window,clock = None,
             item.draw()
         sliderLine.draw()
         slider.draw()
-        if forceChoice == False or clickFirst == True:
-            next.draw()
         for label in labelStims:
             label.draw()
+        if nextVisible: next.draw()
      
      # create a clock if one is not provided
     if not clock:
@@ -216,9 +219,15 @@ def slider(window,clock = None,
                 minDist = distance
                 newPos = label.pos[0]
         return newPos
-    clickFirst = False
-    # Ready for main look looking for clicks
+    # Ready for main loop looking for clicks
     done = False
+    if forceChoice:
+        nextVisible = False
+    else: 
+        nextVisible = True
+    responseStatus = 'na'
+    touched = 'f'
+    event.clearEvents()
     startTime = clock.getTime()
     while (not done):
         drawAll()
@@ -226,9 +235,18 @@ def slider(window,clock = None,
         while mouse.getPressed()[0] == 0: 
             drawAll()
             window.flip()# Wait for the mouse to be down
+            if nextKey != None:
+                if len(event.getKeys(keyList=[nextKey])) > 0:
+                    if nextVisible:
+                        rt = clock.getTime() - startTime
+                        value = pos2val(slider.pos[0])
+                        responseStatus = 'key'
+                        done = True
+                        break
         x,y = mouse.getPos()
         if slider.contains(x,y) or sliderLine.contains(x,y):
-            clickFirst = True
+            nextVisible = True
+            touched = 't'
         if slider.contains(x,y) or (snap2mouse and sliderLine.contains(x,y)):
             while mouse.getPressed()[0] == 1:       # Loop for as long as the mouse stays down
                 x,y = mouse.getPos()
@@ -236,8 +254,6 @@ def slider(window,clock = None,
                     slider.setPos((nearestLabel(x),slider.pos[1]))
                 else:
                     slider.setPos((min(max(x,-width),width),slider.pos[1]))
-                if clickFirst == True or forceChoice == False:
-                    next.draw()
                 drawAll()
                 if feedback == True:
                     vrange = limits[1]-limits[0]
@@ -249,7 +265,7 @@ def slider(window,clock = None,
                     feedbackStim.setPos((slider.pos[0],feedbackStim.pos[1]))
                     feedbackStim.draw()
                 window.flip()
-        elif next.contains(x,y):
+        elif nextVisible and next.contains(x,y):
             # If the subject clicked on the Next button, then darken it and track motion while the mouse is down.
             # If they move the mouse off the Next button before releasing it, lighten the button etc.
             # When they finally release the mouse button, consider the Next button clicked only if the mouse
@@ -264,17 +280,14 @@ def slider(window,clock = None,
                     next.setImage(pngPath+'darknext.png')
                 else:
                     next.setImage(pngPath+'next.png')
-            vrange = limits[1]-limits[0]
-            if clickFirst == False:
-                value = -999
-            else:
-                value = (((slider.pos[0] + (sliderLine.size[0]/2)) / sliderLine.size[0]) * vrange) + limits[0]
+            value = pos2val(slider.pos[0])
             x,y = mouse.getPos()
             if next.contains(x,y):
                 rt = clickTime - startTime
+                responseStatus = 'click'
                 done = True
     window.flip()
-    return round(value,feedbackDigits), rt
+    return round(value,feedbackDigits), rt, responseStatus, touched
 
 def scale(window,clock = None,
                 drawList = [],
@@ -283,8 +296,9 @@ def scale(window,clock = None,
                 labelColor = 'white',
                 nButtons = 5,
                 numberButtons = False,
-                forceChoice=True,
-                scaleLoc = -0.6):
+                forceChoice=False,
+                scaleLoc = -0.6,
+                nextKey = None):
     """ Present a trial with a scale for response. The subject clicks on a scale button to highlight it,
     and then selects a value by clicking the Next button. Returns the
     number of the button highlighted when the Next button is clicked.
@@ -298,8 +312,9 @@ def scale(window,clock = None,
         labelColor -- Color of the label text (default 'white')
         nButtons -- the number of buttons in the scale
         numberButtons -- If True then the buttons will be numbered
-        forceChoice -- If True, require the subject to select a scale button before displaying the Next button. (default True)
+        forceChoice -- If True, require the subject to select a scale button before displaying the Next button. (default False)
         scaleLoc -- vertical position of the scal in "norm" units. (default -0.6)
+        nextKey -- psychopy keyname for a key to substitute for clicking the 'Next' button (default = None)
     """
     def drawAll():
         """ Draw all the objects that make up a slider trial """
@@ -355,6 +370,9 @@ def scale(window,clock = None,
         nextVisible = False
     else: 
         nextVisible = True
+    responseStatus = 'na'
+    touched = 'f'
+    event.clearEvents()
 
     startTime = clock.getTime()
     while (not done):
@@ -364,10 +382,19 @@ def scale(window,clock = None,
         while mouse.getPressed()[0] == 0:
             drawAll()
             window.flip()      # Wait for the mouse to be down
+            if nextKey != None:
+                if len(event.getKeys(keyList=[nextKey])) > 0:
+                    if nextVisible:
+                        rt = clock.getTime() - startTime
+                        responseStatus = 'key'
+                        done = True
+                        break
         x,y = mouse.getPos()
         for index in range(len(scaleButtons)):
             if scaleButtons[index].contains(x,y):
+                touched = 't'
                 if index == selected:
+                    print 'index=selected'
                     scaleButtons[selected].setImage(pngPath+'blank.png')
                     if forceChoice: nextVisible = False
                     selected = None
@@ -398,9 +425,10 @@ def scale(window,clock = None,
             x,y = mouse.getPos()
             if next.contains(x,y):
                 rt = clickTime - startTime
+                responseStatus = 'click'
                 done = True
     window.flip()
-    return selected, rt
+    return selected, rt, responseStatus, touched
 
 def bars(window,clock = None,
                 drawList = [],
@@ -415,7 +443,8 @@ def bars(window,clock = None,
                 limits = [0.0,100.0],
                 defaultHeight = None,
                 drawAxes = True,
-                forceChoice=True):
+                forceChoice=False,
+                nextKey = None):
     """ Present a trial with a bar chart for response. The subject clicks and drags the bars to the desired height,
     and then selects these values by clicking the Next button. Returns the
     heights of the bars when the Next button is clicked.
@@ -436,7 +465,8 @@ def bars(window,clock = None,
         defaultHeight -- the default bar height in the units of limits above (default: halfway)
                                   can also be a list with heights for each bar (must be nBars long)
         drawAxes -- if True, draw X and Y axes for the bar chart (default: True)
-        forceChoice -- If True, require the subject to move a bar before displaying the Next button. (default True)
+        forceChoice -- If True, require the subject to move a bar before displaying the Next button. (default False)
+        nextKey -- psychopy keyname for a key to substitute for clicking the 'Next' button (default = None)
     """
     def drawAll():
         """ Draw all the objects that make up a slider trial """
@@ -575,7 +605,10 @@ def bars(window,clock = None,
         nextVisible = False
     else: 
         nextVisible = True
+    responseStatus = 'na'
+    touched = 'f'
 
+    event.clearEvents()
     startTime = clock.getTime()
     while (not done):
         drawAll()
@@ -584,10 +617,18 @@ def bars(window,clock = None,
         while mouse.getPressed()[0] == 0: 
             drawAll()
             window.flip()      # Wait for the mouse to be down
+            if nextKey != None:
+                if len(event.getKeys(keyList=[nextKey])) > 0:
+                    if nextVisible:
+                        rt = clock.getTime() - startTime
+                        responseStatus = 'key'
+                        done = True
+                        break
         x,y = mouse.getPos()
         for index in range(len(bars)):
             
             if barClicked(x,y,bars[index]):
+                touched = 't'
                 # loop waiting for the mouse to be released
                 nextVisible = True
                 vertices = bars[index].vertices
@@ -620,12 +661,13 @@ def bars(window,clock = None,
             x,y = mouse.getPos()
             if next.contains(x,y):
                 rt = clickTime - startTime
+                responseStatus = 'click'
                 done = True
     settings = []
     for bar in bars:
         settings.append( (bar.vertices[1][1]/height) * (limits[1]-limits[0]) + limits[0] )
     window.flip()
-    return settings,rt
+    return settings, rt, responseStatus, touched
 
 def choice(window,clock = None,
                     drawList=[],
@@ -634,7 +676,8 @@ def choice(window,clock = None,
                     labels=['a','b','c','d','e'],
                     labelColor='white',
                     labelSize=0.1,
-                    forceChoice=True):
+                    forceChoice=False,
+                    nextKey = None):
     """ Present a trial with a set of radio buttons. Only one radio button my be selected.
     Return the number of the selected button or None if no buttons are selected when the Next button is selected.
     
@@ -648,7 +691,8 @@ def choice(window,clock = None,
         labels -- A list with the radio button labels to be placed evenly spaced between vPos and the Next button (default ['a','b','c','d','e'])
         labelColor -- Color of the label text (default 'white')
         labelSize -- Size of the text of the labels (default 0.1)
-        forceChoice -- If True, require the subject to select a radio button before displaying the Next button. (default True)
+        forceChoice -- If True, require the subject to select a radio button before displaying the Next button. (default False)
+        nextKey -- psychopy keyname for a key to substitute for clicking the 'Next' button (default = None)
     """
     def drawAll():
         """ Draw all objects """
@@ -683,7 +727,11 @@ def choice(window,clock = None,
         nextVisible = False
     else: 
         nextVisible = True
+    responseStatus = 'na'
+    touched = 't'
+    
     # Main loop waiting for clicks
+    event.clearEvents()
     startTime = clock.getTime()
     while (not done):
         drawAll()
@@ -692,9 +740,17 @@ def choice(window,clock = None,
         while mouse.getPressed()[0] == 0: 
             drawAll()
             window.flip()      # Wait for click
+            if nextKey != None:
+                if len(event.getKeys(keyList=[nextKey])) > 0:
+                    if nextVisible:
+                        rt = clock.getTime() - startTime
+                        responseStatus = 'key'
+                        done = True
+                        break
         x,y = mouse.getPos()
         for index in range(len(rbStims)):
             if rbClicked(x,y,rbStims[index],extendRight=True):
+                touched = 't'
                 if index == selected:
                     rbStims[selected].setImage(pngPath+'rb.png')
                     if forceChoice: nextVisible = False
@@ -726,9 +782,10 @@ def choice(window,clock = None,
             x,y = mouse.getPos()
             if next.contains(x,y):
                 rt = clickTime - startTime
+                responseStatus = 'click'
                 done = True
     window.flip()
-    return selected, rt
+    return selected, rt, responseStatus, touched
 
 def multiChoice(window,clock = None,
                     drawList=[],
@@ -736,7 +793,8 @@ def multiChoice(window,clock = None,
                     labels=['a','b','c','d','e'],
                     labelColor='white',
                     labelSize=0.1,
-                    forceChoice = True):
+                    forceChoice = False,
+                    nextKey = None):
     """ Present a trial with a set of check boxes. Any number of check boxes may be selected.
     Return a list of the numbers of the selected boxes or an empty list if no boxes are selected when the Next button is selected.
     
@@ -750,7 +808,8 @@ def multiChoice(window,clock = None,
         labels -- A list with the check box labels to be placed evenly spaced between vPos and the Next button (default ['a','b','c','d','e'])
         labelColor -- Color of the label text (default 'white')
         labelSize -- Size of the text of the labels (default 0.1)
-        forceChoice -- If True, require the subject to select at least one box before displaying the Next button. (default True)
+        forceChoice -- If True, require the subject to select at least one box before displaying the Next button. (default False)
+        nextKey -- psychopy keyname for a key to substitute for clicking the 'Next' button (default = None)
     """
 
     def drawAll():
@@ -762,6 +821,8 @@ def multiChoice(window,clock = None,
         nextVisible = False
     else:
         nextVisible = True
+    responseStatus = 'na'
+    touched = 'f'
      
      # create a clock if one is not provided
     if not clock:
@@ -782,6 +843,7 @@ def multiChoice(window,clock = None,
     mouse = event.Mouse(win=window)
     done = False
     selected = []
+    event.clearEvents()
     startTime = clock.getTime()
     while (not done):
         drawAll()
@@ -790,9 +852,17 @@ def multiChoice(window,clock = None,
         while mouse.getPressed()[0] == 0:
             drawAll()
             window.flip()      # Wait for a click
+            if nextKey != None:
+                if len(event.getKeys(keyList=[nextKey])) > 0:
+                    if nextVisible:
+                        rt = clock.getTime() - startTime
+                        responseStatus = 'key'
+                        done = True
+                        break
         x,y = mouse.getPos()
         for index in range(len(rbStims)):
             if rbClicked(x,y,rbStims[index],extendRight=True):
+                touched = 't'
                 if nextVisible == False: nextVisible = True
                 if index not in selected:
                     rbStims[index].setImage(pngPath+'boxc.png')
@@ -825,9 +895,10 @@ def multiChoice(window,clock = None,
             x,y = mouse.getPos()
             if next.contains(x,y): 
                 rt = clickTime - startTime
+                responseStatus = 'click'
                 done = True
     window.flip()
-    return selected, rt
+    return selected, rt, responseStatus, touched
 
 
 def textInput(window, clock=None,
@@ -836,15 +907,21 @@ def textInput(window, clock=None,
                       promptHeight=0.065,
                       promptOffset = 0.1,
                       promptColor='white',
-                      boxTop=0.0):
+                      boxTop=0.0,
+                      nextCharString = None):
     boxWidth=0.8
     promptPos= (-boxWidth, boxTop+promptOffset)
     if not clock:
         clock=core.Clock()
     prompt = visual.TextStim(window,text=prompt,font='Arial',height=promptHeight,alignHoriz='left',color=promptColor, pos=promptPos,alignVert='top', wrapWidth=boxWidth*2)
     writeBox=visual.ShapeStim(window, lineWidth=2.0, lineColor='black', fillColor='white', vertices=((-boxWidth,boxTop), (boxWidth,boxTop), (boxWidth,-0.75), (-boxWidth,-0.75) ), closeShape=True, pos=(0, 0), size=1, ori=0.0, opacity=1.0)
-    global message
+    global message, nextChar, nextCharPressed, touched
     message = ''
+    nextChar = nextCharString
+    nextCharPressed = False
+    responseStatus = 'na'
+    touched = 'f'
+    
     next = visual.ImageStim(window,image=pngPath+'next.png', units = 'norm', pos=(0,-0.9))
     textfield = visual.TextStim(window,text=message+'_',font='Arial',height=.05,alignVert='top', alignHoriz='left',color='black',pos=(-boxWidth+0.05,boxTop-0.05), wrapWidth=boxWidth*2-0.1)
 
@@ -860,7 +937,7 @@ def textInput(window, clock=None,
         promptOffset -- The distance that the prompt appears from the text input box (default = 0.1)
         promptColor -- Color of the prompt text (default = 'white')
         boxTop -- Position of the top of the text input box in normal window units (-1.0 to 1.0) (default = 0.0, center of the screen)
-        
+        nextCharString -- a one character string which when typed is recognized as clicking the 'Next' button (default = None)
         
         
     """
@@ -873,13 +950,17 @@ def textInput(window, clock=None,
         next.draw()
 
     def myTextHandler(text):
-        global message
+        global message, nextChar, nextCharPressed, touched
+        touched = 't'
+        if text == nextChar:
+            nextCharPressed = True
         if text == chr(13): text = '\n'
         message += text
         textfield.setText(message+'_')
 
     def myTextMotionHandler(motion):
-        global message
+        global message, touched
+        touched = 't'
         if motion == pyglet.window.key.MOTION_BACKSPACE:
             message = message[0:-1]
         textfield.setText(message+'_')
@@ -887,14 +968,19 @@ def textInput(window, clock=None,
 
     mouse = event.Mouse(win=window)
     done = False
-    startTime = clock.getTime()
     
     orig_on_text = window.winHandle.on_text
     window.winHandle.on_text = myTextHandler
     window.winHandle.on_text_motion = myTextMotionHandler
+    event.clearEvents()
+    startTime = clock.getTime()
     while (not done):
         drawAll()
         window.flip()
+        if nextCharPressed:
+            rt = clock.getTime() - startTime
+            responseSTatus = 'key'
+            done = True
         if mouse.getPressed()[0] == 1:
             x,y = mouse.getPos()
             if next.contains(x,y):
@@ -911,11 +997,12 @@ def textInput(window, clock=None,
                 x,y = mouse.getPos()
                 if next.contains(x,y): 
                     rt = clickTime - startTime
+                    responseStatus = 'click'
                     done = True 
     window.winHandle.on_text = orig_on_text
     del window.winHandle.on_text_motion
     window.flip()
-    return message,rt
+    return message,rt, responseStatus, touched
 
 class Field():
     def __init__(self, window, fieldtype='string', maxChars=12, size=0.1, text=None, label=None, labelColor='black', pos=[0,0]):
@@ -942,20 +1029,25 @@ class Field():
                 self.checkInput = re.compile('[0-9.]')
     
     def textHandler(self, text):
-        if not self.charsTyped:
-            self.text = ''
-            self.charsTyped = True
-        if len(self.text) < self.maxChars:
-            if self.fieldtype != 'string':
-                if not self.checkInput.match(text):
+        global nextChar, nextCharPressed
+        
+        if text == nextChar:
+            nextCharPressed = True
+        else:
+            if not self.charsTyped:
+                self.text = ''
+                self.charsTyped = True
+            if len(self.text) < self.maxChars:
+                if self.fieldtype != 'string':
+                    if not self.checkInput.match(text):
+                        text = ''
+                if text == chr(13):
                     text = ''
-            if text == chr(13):
-                text = ''
-            if self.fieldtype == 'float' and text == '.' and '.' in self.text:
-                text = ''
-            self.text += text
-            self.tstim.setText(self.text)
-            
+                if self.fieldtype == 'float' and text == '.' and '.' in self.text:
+                    text = ''
+                self.text += text
+                self.tstim.setText(self.text)
+                
     def textMotionHandler(self, motion):
         if not self.charsTyped:
             self.text = ''
@@ -980,7 +1072,8 @@ def form(window, clock=None,
                       fields = [ ['label1', 'black', 'L1', 12, 'string'], ['label2', 'black', '3.2', 12, 'string'] ],
                       size=.1,
                       pos = [0,0],
-                      timeout = None):
+                      timeout = None,
+                      nextCharString = None):
     """ Present a trial with multiple text fields. 
     Returns the entered text and the time when the next button is pressed. 
     
@@ -997,8 +1090,13 @@ def form(window, clock=None,
         size -- The size of the text (default = 0.1)
         pos -- Position of the left edge of the first field box (default = [0,0])
         timeout -- number of seconds after which to time out (default = None)
+        nextCharString -- a one character string which when typed is recognized as clicking the 'Next' button (default = None)
         
     """
+    global nextChar, nextCharPressed
+    nextChar = nextCharString
+    nextCharPressed = False
+    
     if not clock:
         clock=core.Clock()
     formFields = []
@@ -1028,19 +1126,27 @@ def form(window, clock=None,
 
     mouse = event.Mouse(win=window)
     done = False
-    if timeout != None:
-        tclock = core.Clock()
-        tclock.reset()
-    startTime = clock.getTime()
+    responseStatus = 'na'
+    touched = 'f'
     
     orig_on_text = window.winHandle.on_text
     window.winHandle.on_text =myTextHandler
     window.winHandle.on_text_motion = myTextMotionHandler
+    if timeout != None:
+        tclock = core.Clock()
+        tclock.reset()
+    event.clearEvents()
+    startTime = clock.getTime()
     while (not done):
         drawAll()
         window.flip()
         if timeout != None and tclock.getTime() > timeout:
             rt= -99
+            responseStatus = 'timeout'
+            done = True
+        if nextCharPressed:
+            rt = clock.getTime() - startTime
+            responseStatus = 'key'
             done = True
         if mouse.getPressed()[0] == 1:
             x,y = mouse.getPos()
@@ -1061,14 +1167,16 @@ def form(window, clock=None,
                 x,y = mouse.getPos()
                 if next.contains(x,y): 
                     rt = clickTime - startTime
+                    responseStatus = 'click'
                     done = True 
     window.winHandle.on_text = orig_on_text
     del window.winHandle.on_text_motion
     window.flip()
     responses = []
     for field in formFields:
+        if field.charsTyped: touched = 't'
         responses.append(field.getResponse())
-    return responses,rt
+    return responses,rt, responseStatus, touched
 
 def textField(window, clock=None,
                       label = 'your label',
@@ -1078,7 +1186,8 @@ def textField(window, clock=None,
                       maxChars=12,
                       size=.1, pos=[0,0],
                       fieldtype='string',
-                      timeout = None):
+                      timeout = None,
+                      nextCharString = None):
     """ Present a trial with text field box (one line - limited length). 
     Returns the entered text and the time when the next button is pressed. 
     
@@ -1094,6 +1203,7 @@ def textField(window, clock=None,
         pos -- Position of the left edge of the box - centered vertically (default = [0,0])
         fieldtype -- Limit the entered data by limiting input to valid characters - 'string', 'letters', 'int', or 'float' (default: string (any characters))
         timeout -- number of seconds after which to time out default = None)
+        nextCharString -- a one character string which when typed is recognized as clicking the 'Next' button (default = None)
     """
-    return form(window=window, drawList=drawList, fields = [ [label, labelColor, text, maxChars, fieldtype] ], size = size, pos = pos, timeout = timeout )
+    return form(window=window, drawList=drawList, fields = [ [label, labelColor, text, maxChars, fieldtype] ], size = size, pos = pos, timeout = timeout, nextCharString = nextCharString)
     

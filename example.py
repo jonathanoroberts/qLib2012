@@ -27,8 +27,9 @@ event.waitKeys(keyList=['space'])
 # now the example questions
 # see the QLib.py file for documentation
 
+
 someText.setText('question fieldtype - integer textField')
-print textField(window=myWin,drawList=[someText], text=None, fieldtype='int',timeout=3.5)
+print textField(window=myWin,drawList=[someText], text=None, fieldtype='int',timeout=5.0,nextCharString='\r')
 core.wait(.5)
 
 someText.setText('question fieldtype - form')
@@ -44,16 +45,16 @@ print textField(window=myWin,label='Enter a number',text='3.2',labelColor='light
 core.wait(.5)
 
 someText.setText('question fieldtype - multiChoice')
-print multiChoice(window=myWin,drawList = [someText])
+print multiChoice(window=myWin,drawList = [someText],nextKey='space')
 core.wait(.5)
 print multiChoice(window=myWin,forceChoice=False,drawList = [aPicture], vPos=-0.4,labels = ['Mountains','Leaves','Sky','Ocean'])
 core.wait(.5)
 
 someText.setText('question fieldtype - choice')
 myLabels = ['a','b','c','d','e']
-print choice(window=myWin,drawList = [someText])
+print choice(window=myWin,drawList = [someText],nextKey='space')
 core.wait(.5)
-item = choice(window=myWin,forceChoice=False, drawList = [aPicture], vPos=-0.4,labels = ['Fall','Winter','Spring','Summer'])
+print choice(window=myWin,forceChoice=False, drawList = [aPicture], vPos=-0.4,labels = ['Fall','Winter','Spring','Summer'])
 core.wait(.5)
 
 someText.setText('question fieldtype - slider')
