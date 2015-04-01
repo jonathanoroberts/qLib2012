@@ -1,4 +1,4 @@
-__version__ = 'version 2.30'
+__version__ = 'version 2.31'
 ''' QLib - CLIPR PsychoPy questionnaire library
 Author:
 Jonathan O. Roberts (with help from CLIPR TAs Katie Wolsiefer and Holen Katz)
@@ -15,7 +15,7 @@ import os
 pngPath = os.path.dirname(__file__)+'/'
 
 class TextEntryDialog(wx.Dialog):
-    def __init__(self, parent, title, caption, size, initialText=None, select=None, readOnly = False):
+    def __init__(self, parent, title, caption, size, initialText=None, select=None, readOnly = False, minTime=None, timeout=None):
         style =  wx.STAY_ON_TOP | wx.RESIZE_BORDER
         try:
             super(TextEntryDialog, self).__init__(parent, -1, title, style=style)
@@ -29,20 +29,27 @@ class TextEntryDialog(wx.Dialog):
         else:
             input = wx.TextCtrl(self, -1, style=wx.TE_MULTILINE)
         input.SetInitialSize(size)
+        self.initialText = initialText
         input.SetValue(initialText)
         if select:
             input.SetSelection(-1,-1)
         else:
             if not readOnly:
                 input.SetInsertionPointEnd()
-#        buttons = self.CreateButtonSizer(wx.OK|wx.CANCEL)
-        buttons = self.CreateButtonSizer(wx.OK)
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(text, 0, wx.ALL, 5)
         sizer.Add(input, 1, wx.EXPAND|wx.ALL, 5)
-        sizer.Add(buttons, 0, wx.EXPAND|wx.ALL, 5)
+        if minTime == None:
+            buttons = self.CreateButtonSizer(wx.OK)
+            sizer.Add(buttons, 0, wx.EXPAND|wx.ALL, 5)
         self.SetSizerAndFit(sizer)
         self.input = input
+        self.timeout = timeout
+        self.minTime = minTime
+        self.timer = wx.Timer(self)
+        self.minTimer = wx.Timer(self)
+        self.Bind(wx.EVT_TIMER, self.onTimer, self.timer)
+        self.Bind(wx.EVT_TIMER, self.onMinTimer, self.minTimer)
         self.Center()
     def setValue(self, value, select=True):
         self.input.SetValue(value)
@@ -50,24 +57,42 @@ class TextEntryDialog(wx.Dialog):
             self.input.SetSelection(-1,-1)
         else:
             self.input.SetInsertionPointEnd()
-    def getValue(self):
-        return self.input.GetValue()
     def show(self):
         self.SetEscapeId(wx.ID_NONE)
-        if self.ShowModal() == wx.ID_OK:
-            response = self.getValue()
-            self.setValue('')
-            return response
+        if self.minTime != None: self.minTimer.Start(self.minTime)
+        if self.timeout != None: self.timer.Start(self.timeout)
+        status = self.ShowModal()
+        response = self.input.GetValue()
+        if response == self.initialText:
+            touched = 'f'
+        else:
+            touched = 't'
+        if status == wx.ID_OK:
+            return response, 'click',touched
+        elif status == wx.ID_CANCEL:
+            return response, 'timeout',touched
         else:
             print 'problem with textDialog...'
-            return 'error'
-    
+            return 'error','error'
+    def onTimer(self,evt):
+        self.timer.Stop()
+        self.minTimer.Stop()
+        self.EndModal(wx.ID_CANCEL)
+
+    def onMinTimer(self,evt):
+        buttons = self.CreateButtonSizer(wx.OK)
+        self.Sizer.Add(buttons, 0, wx.EXPAND|wx.ALL, 5)
+        self.SetSizerAndFit(self.Sizer)
+        self.minTimer.Stop()
+
 def textDialog(window, clock=None,
                          wsize=(.8,.5),
                          caption='',
                          initialText='enter text here',
                          select=None,
-                         readOnly = False):
+                         readOnly = False,
+                         minTime=None,
+                         timeout=None):
     """Present a trial with a pop-up box that allows for text entry. Once text exceeds the entry window size, scrolling is enabled.
         allows for specification of pop-up size, static text (i.e. a question) that remains above the entry window, and initial text within
         the entry window (which can be replaced upon entry of text, or not).
@@ -83,7 +108,8 @@ def textDialog(window, clock=None,
         readOnly -- If True,subject cannot enter text in the window (usefull for presenting scrolling text), When readOnly is true, select is False by default"
                                 to that position. If False, the subject must click and drag the slider to
                                 change the value. (default False)
-        size -- 
+        minTime -- the number of milliseconds to wait until showing the "OK" button essentially forcing the dialog to be present for that amount of timeout (default: None)
+        timeout -- number of milliseconds to wait before returning from the dialog even when the "OK" button has not been clicked (default: None)
     
     """
     if select == None:
@@ -94,15 +120,13 @@ def textDialog(window, clock=None,
     size = (window.size[0] * wsize[0], window.size[1] * wsize[1])
     if not clock:
         clock = core.Clock()
-    dlg = TextEntryDialog(None,title = '',caption=caption,readOnly = readOnly, initialText=initialText,select=select,size=size)
+    dlg = TextEntryDialog(None,title = '',caption=caption,readOnly = readOnly, initialText=initialText,select=select,size=size,minTime=minTime,timeout=timeout)
     window.flip()
     startTime = clock.getTime()
-    response = dlg.show()
+    response,responseStatus,touched = dlg.show()
     rt = clock.getTime() - startTime
     window.flip()
     dlg.Destroy()
-    responseStatus = 'click'
-    touched = 'na'
     return response, rt, responseStatus, touched
 
 def rbClicked(x = None, y = None, object = None, extendRight=False):

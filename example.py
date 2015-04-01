@@ -27,21 +27,16 @@ event.waitKeys(keyList=['space'])
 # now the example questions
 # see the QLib.py file for documentation
 
-
-someText.setText('question fieldtype - integer textField')
-print textField(window=myWin,drawList=[someText], text=None, fieldtype='int',timeout=5.0,nextCharString='\r')
+someText.setText('question fieldtype - textField')
+print textField(window=myWin,drawList=[someText])
+core.wait(.5)
+print textField(window=myWin,label='Enter a number',text='3.2',labelColor='lightblue',drawList=[aPicture],pos=(0,-.5),fieldtype='float')
 core.wait(.5)
 
 someText.setText('question fieldtype - form')
 print form(window=myWin,drawList=[someText])
 core.wait(.5)
 print form(window=myWin, drawList=[aPicture], fields = [ ['Subject ID', 'black', '', 7, 'string'], ['Pretest Score', 'black', '98.6', 5, 'float'], ['Age', 'black', None, 3, 'int'] ], pos = [0,-0.3] )
-core.wait(.5)
-
-someText.setText('question fieldtype - textField')
-print textField(window=myWin,drawList=[someText])
-core.wait(.5)
-print textField(window=myWin,label='Enter a number',text='3.2',labelColor='lightblue',drawList=[aPicture],pos=(0,-.5),fieldtype='float')
 core.wait(.5)
 
 someText.setText('question fieldtype - multiChoice')
