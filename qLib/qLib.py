@@ -1,4 +1,4 @@
-__version__ = 'version 2.31'
+__version__ = 'version 2.32'
 ''' QLib - CLIPR PsychoPy questionnaire library
 Author:
 Jonathan O. Roberts (with help from CLIPR TAs Katie Wolsiefer and Holen Katz)
@@ -245,7 +245,7 @@ def slider(window,clock = None,
         return newPos
     # Ready for main loop looking for clicks
     done = False
-    if forceChoice:
+    if forceChoice or (nextKey != None):
         nextVisible = False
     else: 
         nextVisible = True
@@ -269,7 +269,7 @@ def slider(window,clock = None,
                         break
         x,y = mouse.getPos()
         if slider.contains(x,y) or sliderLine.contains(x,y):
-            nextVisible = True
+            if nextKey == None: nextVisible = True
             touched = 't'
         if slider.contains(x,y) or (snap2mouse and sliderLine.contains(x,y)):
             while mouse.getPressed()[0] == 1:       # Loop for as long as the mouse stays down
@@ -390,7 +390,7 @@ def scale(window,clock = None,
     # Ready for main loop looking for clicks
     done = False
     selected = None
-    if forceChoice:
+    if forceChoice or (nextKey != None):
         nextVisible = False
     else: 
         nextVisible = True
@@ -426,7 +426,7 @@ def scale(window,clock = None,
                     if selected != None: scaleButtons[selected].setImage(pngPath+'blank.png')
                     scaleButtons[index].setImage(pngPath+'darkblank.png')
                     selected = index
-                    nextVisible = True
+                    if nextKey == None: nextVisible = True
                 # loop waiting for the mouse to be released
                 while mouse.getPressed()[0] == 1:
                     drawAll()
@@ -625,7 +625,7 @@ def bars(window,clock = None,
 
     # Ready for main loop looking for clicks
     done = False
-    if forceChoice:
+    if forceChoice or (nextKey != None):
         nextVisible = False
     else: 
         nextVisible = True
@@ -654,7 +654,7 @@ def bars(window,clock = None,
             if barClicked(x,y,bars[index]):
                 touched = 't'
                 # loop waiting for the mouse to be released
-                nextVisible = True
+                if nextKey == None: nextVisible = True
                 vertices = bars[index].vertices
                 top = vertices[1][1]
                 while mouse.getPressed()[0] == 1:
@@ -747,12 +747,12 @@ def choice(window,clock = None,
     mouse = event.Mouse(win=window)
     done = False
     selected = None
-    if forceChoice:
+    if forceChoice or (nextKey != None):
         nextVisible = False
     else: 
         nextVisible = True
     responseStatus = 'na'
-    touched = 't'
+    touched = 'f'
     
     # Main loop waiting for clicks
     event.clearEvents()
@@ -766,28 +766,29 @@ def choice(window,clock = None,
             window.flip()      # Wait for click
             if nextKey != None:
                 if len(event.getKeys(keyList=[nextKey])) > 0:
-                    if nextVisible:
+                    if forceChoice == False or touched == True:
                         rt = clock.getTime() - startTime
                         responseStatus = 'key'
                         done = True
                         break
-        x,y = mouse.getPos()
-        for index in range(len(rbStims)):
-            if rbClicked(x,y,rbStims[index],extendRight=True):
-                touched = 't'
-                if index == selected:
-                    rbStims[selected].setImage(pngPath+'rb.png')
-                    if forceChoice: nextVisible = False
-                    selected = None
-                else:
-                    if selected != None: rbStims[selected].setImage(pngPath+'rb.png')
-                    rbStims[index].setImage(pngPath+'rbc.png')
-                    selected = index
-                    nextVisible = True
-                # loop waiting for the mouse to be released
-                while mouse.getPressed()[0] == 1:
-                    drawAll()
-                    window.flip()
+        if done == False:
+            x,y = mouse.getPos()
+            for index in range(len(rbStims)):
+                if rbClicked(x,y,rbStims[index],extendRight=True):
+                    touched = 't'
+                    if index == selected:
+                        rbStims[selected].setImage(pngPath+'rb.png')
+                        if forceChoice: nextVisible = False
+                        selected = None
+                    else:
+                        if selected != None: rbStims[selected].setImage(pngPath+'rb.png')
+                        rbStims[index].setImage(pngPath+'rbc.png')
+                        selected = index
+                        if nextKey == None: nextVisible = True
+                    # loop waiting for the mouse to be released
+                    while mouse.getPressed()[0] == 1:
+                        drawAll()
+                        window.flip()
         # If the subject clicked on the Next button, then darken it and track motion while the mouse is down.
         # If they move the mouse off the Next button before releasing it, lighten the button etc.
         # When they finally release the mouse button, consider the Next button clicked only if the mouse
@@ -841,7 +842,7 @@ def multiChoice(window,clock = None,
         for label in labelStims: label.draw()
         for rb in rbStims: rb.draw()
         if nextVisible: next.draw()
-    if forceChoice:
+    if forceChoice or (nextKey != None):
         nextVisible = False
     else:
         nextVisible = True
@@ -878,29 +879,30 @@ def multiChoice(window,clock = None,
             window.flip()      # Wait for a click
             if nextKey != None:
                 if len(event.getKeys(keyList=[nextKey])) > 0:
-                    if nextVisible:
+                    if forceChoice == False or touched == t:
                         rt = clock.getTime() - startTime
                         responseStatus = 'key'
                         done = True
                         break
-        x,y = mouse.getPos()
-        for index in range(len(rbStims)):
-            if rbClicked(x,y,rbStims[index],extendRight=True):
-                touched = 't'
-                if nextVisible == False: nextVisible = True
-                if index not in selected:
-                    rbStims[index].setImage(pngPath+'boxc.png')
-                    while mouse.getPressed()[0] == 1:
-                        drawAll()
-                        window.flip()
-                    selected.append(index)
-                else:
-                    rbStims[index].setImage(pngPath+'box.png')
-                    while mouse.getPressed()[0] == 1:
-                        drawAll()
-                        window.flip()
-                    selected.remove(index)
-                    if len(selected) == 0: nextVisible = False
+        if done == False:
+            x,y = mouse.getPos()
+            for index in range(len(rbStims)):
+                if rbClicked(x,y,rbStims[index],extendRight=True):
+                    touched = 't'
+                    if (nextVisible == False) and (nextKey == None): nextVisible = True
+                    if index not in selected:
+                        rbStims[index].setImage(pngPath+'boxc.png')
+                        while mouse.getPressed()[0] == 1:
+                            drawAll()
+                            window.flip()
+                        selected.append(index)
+                    else:
+                        rbStims[index].setImage(pngPath+'box.png')
+                        while mouse.getPressed()[0] == 1:
+                            drawAll()
+                            window.flip()
+                        selected.remove(index)
+                        if len(selected) == 0 and forceChoice: nextVisible = False
         # If the subject clicked on the Next button, then darken it and track motion while the mouse is down.
         # If they move the mouse off the Next button before releasing it, lighten the button etc.
         # When they finally release the mouse button, consider the Next button clicked only if the mouse
@@ -971,7 +973,7 @@ def textInput(window, clock=None,
         writeBox.draw()
         prompt.draw()
         textfield.draw()
-        next.draw()
+        if nextCharString == None: next.draw()
 
     def myTextHandler(text):
         global message, nextChar, nextCharPressed, touched
@@ -1007,7 +1009,7 @@ def textInput(window, clock=None,
             done = True
         if mouse.getPressed()[0] == 1:
             x,y = mouse.getPos()
-            if next.contains(x,y):
+            if (nextCharString == None) and next.contains(x,y):
                 clickTime = clock.getTime()
                 next.setImage(pngPath+'darknext.png')
                 while mouse.getPressed()[0] == 1:
@@ -1140,7 +1142,7 @@ def form(window, clock=None,
             activeField.writeBox.lineWidth=4
             field.draw()
             activeField.writeBox.lineWidth=1
-        next.draw()
+        if nextCharString == None: next.draw()
         
     def myTextHandler(text):
         activeField.textHandler(text)
@@ -1177,7 +1179,7 @@ def form(window, clock=None,
             for field in formFields:
                 if field.writeBox.contains(x,y):
                     activeField = field
-            if next.contains(x,y):
+            if (nextCharString == None) and next.contains(x,y):
                 clickTime = clock.getTime()
                 next.setImage(pngPath+'darknext.png')
                 while mouse.getPressed()[0] == 1:

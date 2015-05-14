@@ -27,6 +27,7 @@ event.waitKeys(keyList=['space'])
 # now the example questions
 # see the QLib.py file for documentation
 
+
 someText.setText('question fieldtype - textField')
 print textField(window=myWin,drawList=[someText])
 core.wait(.5)
@@ -42,7 +43,7 @@ core.wait(.5)
 someText.setText('question fieldtype - multiChoice')
 print multiChoice(window=myWin,drawList = [someText],nextKey='space')
 core.wait(.5)
-print multiChoice(window=myWin,forceChoice=False,drawList = [aPicture], vPos=-0.4,labels = ['Mountains','Leaves','Sky','Ocean'])
+print multiChoice(window=myWin,forceChoice=True,drawList = [aPicture], vPos=-0.4,labels = ['Mountains','Leaves','Sky','Ocean'])
 core.wait(.5)
 
 someText.setText('question fieldtype - choice')
@@ -91,6 +92,7 @@ myWin.flip()
 # and wait 2 seconds before quitting
 core.wait(2.0)
 core.quit()
+
 
 
 

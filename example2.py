@@ -56,7 +56,7 @@ def continuous(window=None, drawList=None, timeout=1.0):
 
 #
 #create a psychoPy window
-myWin = visual.Window(fullscr=False,size=(1024,768 ),winType='pyglet')
+myWin = visual.Window(fullscr=False,size=(1024,768 ), units='norm',winType='pyglet')
 
 # and some stimuli to use with the question
 aPicture = visual.ImageStim(myWin, 'flatirons.png', pos = (0,.3))
