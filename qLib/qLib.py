@@ -1043,7 +1043,7 @@ class Field():
 #        self.writeBox=visual.ShapeStim(window, lineWidth=2.0, lineColor='black', fillColor='white', vertices=( (pos[0]+.01,pos[1]-size/2-.01), (pos[0]+.01+width,pos[1]-size/2-.01), (pos[0]+.01+width,pos[1]+size/2), (pos[0]+.01,pos[1]+size/2) ), closeShape=True)
         self.writeBox=visual.Rect(window, lineWidth=2.0, height=size+0.01, width = width,lineColor='black', fillColor='white', pos = (pos[0]+0.01+(width/2), pos[1]-0.01), closeShape=True)
         self.label = label
-        if self.label != None: self.labelStim =  visual.TextStim(window, text=self.label, alignHoriz = 'right', height=.1, color = labelColor, pos=pos)
+        if self.label != None: self.labelStim =  visual.TextStim(window, text=self.label, alignHoriz = 'right', height=size, color = labelColor, pos=pos)
         if fieldtype != 'string':
             if fieldtype == 'letters':
                 self.checkInput = re.compile('[a-z]|[A-Z]')
@@ -1131,7 +1131,7 @@ def form(window, clock=None,
         label, labelColor, text, max, fieldtype = field
         fieldpos = [x, y]
         y -= (size + 0.03)
-        formFields.append(Field(window, label=label, maxChars=max, pos=fieldpos, fieldtype=fieldtype, text=text))
+        formFields.append(Field(window, label=label, maxChars=max, size=size, pos=fieldpos, fieldtype=fieldtype, text=text))
     activeField = formFields[0]
     next = visual.ImageStim(window,image=pngPath+'next.png', units = 'norm', pos=(0,-0.9))
 
