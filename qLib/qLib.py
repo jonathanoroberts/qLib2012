@@ -1,4 +1,4 @@
-__version__ = 'version 2.33'
+__version__ = 'version 2.34'
 ''' QLib - CLIPR PsychoPy Questionnaire Library
 Author:
 Jonathan O. Roberts (with help from CLIPR TAs Katie Wolsiefer and Holen Katz)
