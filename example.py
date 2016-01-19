@@ -29,7 +29,7 @@ event.waitKeys(keyList=['space'])
 
 
 someText.setText('question fieldtype - textField')
-print textField(window=myWin,drawList=[someText])
+print textField(window=myWin,drawList=[someText], passwordMode = True)
 core.wait(.5)
 print textField(window=myWin,label='Enter a number',text='3.2',labelColor='lightblue',drawList=[aPicture],pos=(0,-.5),fieldtype='float')
 core.wait(.5)

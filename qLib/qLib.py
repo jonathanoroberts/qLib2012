@@ -1031,9 +1031,10 @@ def textInput(window, clock=None,
     return message,rt, responseStatus, touched
 
 class Field():
-    def __init__(self, window, fieldtype='string', maxChars=12, size=0.1, text=None, label=None, labelColor='black', pos=[0,0]):
+    def __init__(self, window, fieldtype='string', maxChars=12, size=0.1, text=None, label=None, labelColor='black', pos=[0,0], passwordMode=False):
         width = (size*0.6) * maxChars
         self.charsTyped = False
+        self.passwordMode = passwordMode
         self.text = text
         if self.text is not None:
             self.text = str(self.text)
@@ -1072,7 +1073,10 @@ class Field():
                 if self.fieldtype == 'float' and text == '.' and '.' in self.text:
                     text = ''
                 self.text += text
-                self.tstim.setText(self.text)
+                if self.passwordMode:
+                    self.tstim.setText('#' * len(self.text))
+                else:
+                    self.tstim.setText(self.text)
                 
     def textMotionHandler(self, motion):
         if not self.charsTyped:
@@ -1080,8 +1084,11 @@ class Field():
             self.charsTyped = True
         if motion == pyglet.window.key.MOTION_BACKSPACE:
             self.text = self.text[0:-1]
-        self.tstim.setText(self.text)
-        
+        if self.passwordMode:
+            self.tstim.setText('#' * len(self.text))
+        else:
+            self.tstim.setText(self.text)
+
     def draw(self):
         self.writeBox.draw()
         self.tstim.draw()
@@ -1099,7 +1106,8 @@ def form(window, clock=None,
                       size=.1,
                       pos = [0,0],
                       timeout = None,
-                      nextCharString = None):
+                      nextCharString = None,
+                      passwordMode=False):
     """ Present a trial with multiple text fields. 
     Returns the entered text and the time when the next button is pressed. 
     
@@ -1117,6 +1125,7 @@ def form(window, clock=None,
         pos -- Position of the left edge of the first field box (default = [0,0])
         timeout -- number of seconds after which to time out (default = None)
         nextCharString -- a one character string which when typed is recognized as clicking the 'Next' button (default = None)
+        passwordMode -- boolean - if True display "#" for each character typed (default = False)
         
     """
     global nextChar, nextCharPressed
@@ -1131,7 +1140,7 @@ def form(window, clock=None,
         label, labelColor, text, max, fieldtype = field
         fieldpos = [x, y]
         y -= (size + 0.03)
-        formFields.append(Field(window, label=label, maxChars=max, size=size, pos=fieldpos, fieldtype=fieldtype, text=text))
+        formFields.append(Field(window, label=label, maxChars=max, size=size, pos=fieldpos, fieldtype=fieldtype, text=text, passwordMode=passwordMode))
     activeField = formFields[0]
     next = visual.ImageStim(window,image=pngPath+'next.png', units = 'norm', pos=(0,-0.9))
 
@@ -1213,7 +1222,8 @@ def textField(window, clock=None,
                       size=.1, pos=[0,0],
                       fieldtype='string',
                       timeout = None,
-                      nextCharString = None):
+                      nextCharString = None,
+                      passwordMode = False):
     """ Present a trial with text field box (one line - limited length). 
     Returns the entered text and the time when the next button is pressed. 
     
@@ -1230,6 +1240,7 @@ def textField(window, clock=None,
         fieldtype -- Limit the entered data by limiting input to valid characters - 'string', 'letters', 'int', or 'float' (default: string (any characters))
         timeout -- number of seconds after which to time out default = None)
         nextCharString -- a one character string which when typed is recognized as clicking the 'Next' button (default = None)
+        passwordMode -- boolean - if True display "#" for each character typed (default = False)
     """
-    return form(window=window, drawList=drawList, fields = [ [label, labelColor, text, maxChars, fieldtype] ], size = size, pos = pos, timeout = timeout, nextCharString = nextCharString)
+    return form(window=window, drawList=drawList, fields = [ [label, labelColor, text, maxChars, fieldtype] ], size = size, pos = pos, timeout = timeout, nextCharString = nextCharString, passwordMode=passwordMode)
     
