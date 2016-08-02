@@ -27,6 +27,9 @@ event.waitKeys(keyList=['space'])
 # now the example questions
 # see the QLib.py file for documentation
 
+someText.setText('question fieldtype - textInput\nminimal editing capability')
+print textInput(window=myWin, drawList = [someText])
+core.wait(.5)
 
 someText.setText('question fieldtype - textField')
 print textField(window=myWin,drawList=[someText], passwordMode = True)
