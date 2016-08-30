@@ -575,6 +575,7 @@ def bars(window,clock = None,
     # Build a list containing the bars. Calculate the positions for the bars so they are evenly spaced within the width specified
 
     if not barColors:
+        print window.color
         if window.color == 'lightgrey': barColor = 'white'
         else: barColor = 'lightgrey'
         barColors = []
@@ -593,16 +594,25 @@ def bars(window,clock = None,
             else:
                 top = ((defaultHeight[count]-limits[0])/limits[1]-limits[0]) * height
         barVertices = [ [left,-.01], [left,top],[right,top], [right,-.01] ]
-        bars.append( visual.ShapeStim(window, 
+        bars.append( visual.Rect(window, 
                  lineColor='black',
                  lineWidth=2.0, #in pixels
                  fillColor=barColors[count], #beware, with convex shapes fill colors don't work
-                 vertices=barVertices,#choose something from the above or make your own
+                 width=barWidth-barGap,height=top+0.01,
                  closeShape=True,#do you want the final vertex to complete a loop with 1st?
-                 pos= [barPos,base], #the anchor (rotaion and vertices are position with respect to this)
-                 interpolate=True,
-                 opacity=0.9,
-                 autoLog=False))#this stim changes too much for autologging to be useful
+                 pos= [barPos,(base+top/2.0)-0.01],
+                 opacity=0.9))
+
+#        bars.append( visual.ShapeStim(window, 
+#                 lineColor='black',
+#                 lineWidth=2.0, #in pixels
+#                 fillColor=barColors[count], #beware, with convex shapes fill colors don't work
+#                 vertices=barVertices,#choose something from the above or make your own
+#                 closeShape=True,#do you want the final vertex to complete a loop with 1st?
+#                 pos= [barPos,base], #the anchor (rotaion and vertices are position with respect to this)
+#                 interpolate=True,
+#                 opacity=0.9,
+#                 autoLog=False))#this stim changes too much for autologging to be useful
 
     # create axes
     if drawAxes:
@@ -651,19 +661,16 @@ def bars(window,clock = None,
         x,y = mouse.getPos()
         for index in range(len(bars)):
             
-            if barClicked(x,y,bars[index]):
+            if bars[index].contains(x,y):
                 touched = 't'
                 # loop waiting for the mouse to be released
                 if nextKey == None: nextVisible = True
-                vertices = bars[index].vertices
-                top = vertices[1][1]
                 while mouse.getPressed()[0] == 1:
                     newX,newY = mouse.getPos()
-                    deltaY = newY - y
-                    setting = max(0.0,min(maxPos-base, top+deltaY))
-                    vertices[1][1] = setting
-                    vertices[2][1] = setting
-                    bars[index].setVertices(vertices)
+                    setting = max(0.0,min(maxPos-base, newY-base))
+                    bars[index].height = setting+0.01
+                    barX,barY = bars[index].pos
+                    bars[index].setPos((barX,(base+setting/2)-0.01))
                     drawAll()
                     window.flip()
 
@@ -689,7 +696,7 @@ def bars(window,clock = None,
                 done = True
     settings = []
     for bar in bars:
-        settings.append( (bar.vertices[1][1]/height) * (limits[1]-limits[0]) + limits[0] )
+        settings.append( ((bar.height-0.01)/height) * (limits[1]-limits[0]) + limits[0] )
     window.flip()
     return settings, rt, responseStatus, touched
 
