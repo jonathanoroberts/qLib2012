@@ -1,4 +1,4 @@
-__version__ = 'version 2.35'
+__version__ = 'version 2.36'
 ''' qLib2012 - CLIPR PsychoPy Questionnaire Library
 Author:
 Jonathan O. Roberts (with help from CLIPR TAs Katie Wolsiefer and Holen Katz)
@@ -1147,7 +1147,7 @@ def form(window, clock=None,
         label, labelColor, text, max, fieldtype = field
         fieldpos = [x, y]
         y -= (size + 0.03)
-        formFields.append(Field(window, label=label, maxChars=max, size=size, pos=fieldpos, fieldtype=fieldtype, text=text, passwordMode=passwordMode))
+        formFields.append(Field(window, label=label, labelColor=labelColor, maxChars=max, size=size, pos=fieldpos, fieldtype=fieldtype, text=text, passwordMode=passwordMode))
     activeField = formFields[0]
     next = visual.ImageStim(window,image=pngPath+'next.png', units = 'norm', pos=(0,-0.9))
 
