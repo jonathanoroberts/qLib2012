@@ -5,6 +5,7 @@
 from psychopy import visual,event,core
 import random
 from qLib.qLib import *
+import numpy
 from ctypes import *
 class CGPoint(Structure):
     _fields_ = [
@@ -57,6 +58,7 @@ def continuous(window=None, drawList=None, timeout=1.0):
 #
 #create a psychoPy window
 myWin = visual.Window(fullscr=False,size=(1024,768 ), units='norm',winType='pyglet')
+myWin.size = numpy.array([myWin.size[0],myWin.size[1]]) #workaround bug in psychopy 1.85.6 for retina displays
 
 # and some stimuli to use with the question
 aPicture = visual.ImageStim(myWin, 'flatirons.png', pos = (0,.3))

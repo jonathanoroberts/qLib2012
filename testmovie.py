@@ -2,10 +2,12 @@
 # demo of qLib with movie stimuli
 #
 from psychopy import visual,event,core
+import numpy
 from qLib.qLib import *
 
 #create a psychoPy window
 myWin = visual.Window(fullscr=False,size=(1024,768 ),winType='pyglet')
+myWin.size = numpy.array([myWin.size[0],myWin.size[1]]) #workaround bug in psychopy 1.85.6 for retina displays
 
 #Only works reliably with MovieStim2
 mov = visual.MovieStim2(myWin, 'testmovie.mp4', size=(.75,.75), pos=(0,.5),units='norm',flipVert=False,flipHoriz=False,)

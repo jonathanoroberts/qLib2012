@@ -5,9 +5,11 @@
 from psychopy import visual,event,core
 import random
 from qLib.qLib import *
+import numpy
 #
 #create a psychoPy window
 myWin = visual.Window(fullscr=False,size=(800,600 ),winType='pyglet')
+myWin.size = numpy.array([myWin.size[0],myWin.size[1]]) #workaround bug in psychopy 1.85.6 for retina displays
 
 # and some stimuli to use with the questions
 aPicture = visual.ImageStim(myWin, 'flatirons.png', pos = (0,.3), size=1.0)
