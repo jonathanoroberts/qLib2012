@@ -40,7 +40,7 @@ core.wait(.5)
 someText.setText('question fieldtype - form')
 print form(window=myWin,drawList=[someText])
 core.wait(.5)
-print form(window=myWin, drawList=[aPicture], fields = [ ['Subject ID', 'black', '', 7, 'string'], ['Pretest Score', 'black', '98.6', 5, 'float'], ['Age', 'black', None, 3, 'int'] ], pos = [0,-0.3] )
+print form(window=myWin, drawList=[aPicture], fields = [ ['Subject ID', 'red', '', 7, 'string'], ['Pretest Score', 'blue', '98.6', 5, 'float'], ['Age', 'green', None, 3, 'int'] ], pos = [0,-0.3] )
 core.wait(.5)
 
 someText.setText('question fieldtype - multiChoice')
