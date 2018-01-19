@@ -418,7 +418,6 @@ def scale(window,clock = None,
             if scaleButtons[index].contains(x,y):
                 touched = 't'
                 if index == selected:
-                    print 'index=selected'
                     scaleButtons[selected].setImage(pngPath+'blank.png')
                     if forceChoice: nextVisible = False
                     selected = None
@@ -575,7 +574,6 @@ def bars(window,clock = None,
     # Build a list containing the bars. Calculate the positions for the bars so they are evenly spaced within the width specified
 
     if not barColors:
-        print window.color
         if window.color == 'lightgrey': barColor = 'white'
         else: barColor = 'lightgrey'
         barColors = []
