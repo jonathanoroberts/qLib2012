@@ -75,7 +75,7 @@ event.waitKeys(keyList=['space'])
 
 # continuous
 data = continuous(myWin,[aPicture],timeout=3.0)
-print data
+print(data)
 
 
 # say thanks

@@ -1,4 +1,4 @@
-__version__ = 'version 2.36'
+__version__ = 'version 2.37'
 ''' qLib2012 - CLIPR PsychoPy Questionnaire Library
 Author:
 Jonathan O. Roberts (with help from CLIPR TAs Katie Wolsiefer and Holen Katz)
@@ -11,17 +11,18 @@ import time,glob,random
 from psychopy import visual,event,core
 import pyglet
 import wx, re
-import os
+import os, sys
 pngPath = os.path.dirname(__file__)+'/'
 
 class TextEntryDialog(wx.Dialog):
     def __init__(self, parent, title, caption, size, initialText=None, select=None, readOnly = False, minTime=None, timeout=None):
+        if(sys.version_info[0] > 2): raise Exception('TextDialog not supported under Python 3')
         style =  wx.STAY_ON_TOP | wx.RESIZE_BORDER
         try:
             super(TextEntryDialog, self).__init__(parent, -1, title, style=style)
         except:
             global app
-            app = wx.PySimpleApp()
+            app = wx.App()
             super(TextEntryDialog, self).__init__(parent, -1, title, style=style)
         text = wx.StaticText(self, -1, caption)
         if readOnly:
@@ -72,7 +73,7 @@ class TextEntryDialog(wx.Dialog):
         elif status == wx.ID_CANCEL:
             return response, 'timeout',touched
         else:
-            print 'problem with textDialog...'
+            print('problem with textDialog...')
             return 'error','error'
     def onTimer(self,evt):
         self.timer.Stop()
@@ -120,7 +121,9 @@ def textDialog(window, clock=None,
     size = (window.size[0] * wsize[0], window.size[1] * wsize[1])
     if not clock:
         clock = core.Clock()
+    print('about to define dialog')
     dlg = TextEntryDialog(None,title = '',caption=caption,readOnly = readOnly, initialText=initialText,select=select,size=size,minTime=minTime,timeout=timeout)
+    print('dialog defined')
     window.flip()
     startTime = clock.getTime()
     response,responseStatus,touched = dlg.show()
@@ -587,7 +590,7 @@ def bars(window,clock = None,
             top = ((defaultHeight-limits[0])/(limits[1]-limits[0])) * height
         else:
             if count+1 > len(defaultHeight):
-                print 'Warning: defaultHeight list is too short, using .5 for bar %i' % (count+1)
+                print('Warning: defaultHeight list is too short, using .5 for bar %i' % (count+1))
                 top = .5 * height
             else:
                 top = ((defaultHeight[count]-limits[0])/limits[1]-limits[0]) * height

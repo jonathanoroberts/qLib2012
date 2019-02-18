@@ -10,7 +10,7 @@ myWin = visual.Window(fullscr=False,size=(1024,768 ),winType='pyglet')
 myWin.size = numpy.array([myWin.size[0],myWin.size[1]]) #workaround bug in psychopy 1.85.6 for retina displays
 
 #Only works reliably with MovieStim2
-mov = visual.MovieStim2(myWin, 'testmovie.mp4', size=(.75,.75), pos=(0,.5),units='norm',flipVert=False,flipHoriz=False,)
+mov = visual.MovieStim3(myWin, 'testmovie.mp4', size=(.75,.75), pos=(0,.5),units='norm',flipVert=False,flipHoriz=False,)
 
 # create a text Stimulus for the instructions
 # usable color names can be found at http://www.w3schools.com/html/html_colornames.asp
@@ -26,7 +26,7 @@ event.waitKeys(keyList=['space'])
 # now the example questions
 # see the QLib.py file for documentation
 
-print bars(window=myWin,forceChoice=False,nBars=5,width=.7,height=.5,drawList=[mov], labels=['a','b','c','d','e'],yLabels=['a pretty\nlong label'], defaultHeight=[20,30,40,50,60])
+print(bars(window=myWin,forceChoice=False,nBars=5,width=.7,height=.5,drawList=[mov], labels=['a','b','c','d','e'],yLabels=['a pretty\nlong label'], defaultHeight=[20,30,40,50,60]))
 core.wait(.5)
 
 # say thanks

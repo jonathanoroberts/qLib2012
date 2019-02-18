@@ -30,64 +30,64 @@ event.waitKeys(keyList=['space'])
 # see the QLib.py file for documentation
 
 someText.setText('question fieldtype - textInput\nminimal editing capability')
-print textInput(window=myWin, drawList = [someText])
+print(textInput(window=myWin, drawList = [someText]))
 core.wait(.5)
 
-someText.setText('question fieldtype - textField')
-print textField(window=myWin,drawList=[someText], passwordMode = True)
+someText.setText('question fieldtype - textField in password mode')
+print(textField(window=myWin,drawList=[someText], passwordMode = True))
 core.wait(.5)
-print textField(window=myWin,label='Enter a number',text='3.2',labelColor='lightblue',drawList=[aPicture],pos=(0,-.5),fieldtype='float')
+print(textField(window=myWin,label='Enter a number',text='3.2',labelColor='lightblue',drawList=[aPicture],pos=(0,-.5),fieldtype='float'))
 core.wait(.5)
 
 someText.setText('question fieldtype - form')
-print form(window=myWin,drawList=[someText])
+print(form(window=myWin,drawList=[someText]))
 core.wait(.5)
-print form(window=myWin, drawList=[aPicture], fields = [ ['Subject ID', 'red', '', 7, 'string'], ['Pretest Score', 'blue', '98.6', 5, 'float'], ['Age', 'green', None, 3, 'int'] ], pos = [0,-0.3] )
+print(form(window=myWin, drawList=[aPicture], fields = [ ['Subject ID', 'red', '', 7, 'string'], ['Pretest Score', 'blue', '98.6', 5, 'float'], ['Age', 'green', None, 3, 'int'] ], pos = [0,-0.3] ))
 core.wait(.5)
 
 someText.setText('question fieldtype - multiChoice')
-print multiChoice(window=myWin,drawList = [someText],nextKey='space')
+print(multiChoice(window=myWin,drawList = [someText],nextKey='space'))
 core.wait(.5)
-print multiChoice(window=myWin,forceChoice=True,drawList = [aPicture], vPos=-0.4,labels = ['Mountains','Leaves','Sky','Ocean'])
+print(multiChoice(window=myWin,forceChoice=True,drawList = [aPicture], vPos=-0.4,labels = ['Mountains','Leaves','Sky','Ocean']))
 core.wait(.5)
 
 someText.setText('question fieldtype - choice')
 myLabels = ['a','b','c','d','e']
-print choice(window=myWin,drawList = [someText],nextKey='space')
+print(choice(window=myWin,drawList = [someText],nextKey='space'))
 core.wait(.5)
-print choice(window=myWin,forceChoice=False, drawList = [aPicture], vPos=-0.4,labels = ['Fall','Winter','Spring','Summer'])
+print(choice(window=myWin,forceChoice=False, drawList = [aPicture], vPos=-0.4,labels = ['Fall','Winter','Spring','Summer']))
 core.wait(.5)
 
 someText.setText('question fieldtype - slider')
-print slider(window=myWin,  drawList = [someText])
+print(slider(window=myWin,  drawList = [someText]))
 core.wait(.5)
-print slider(window=myWin, forceChoice=False, sliderLoc = -0.6, drawList = [aPicture], limits = [-500,500], start=0, snap2labels=True ,snap2mouse=True , feedback=True, feedbackDigits=1, labels = ['less','','','','','about\nthe\nsame','','','','','more'])
+print(slider(window=myWin, forceChoice=False, sliderLoc = -0.6, drawList = [aPicture], limits = [-500,500], start=0, snap2labels=True ,snap2mouse=True , feedback=True, feedbackDigits=1, labels = ['less','','','','','about\nthe\nsame','','','','','more']))
 core.wait(.5)
 
 someText.setText('question fieldtype - scale')
-print scale(window=myWin, drawList = [someText])
+print(scale(window=myWin, drawList = [someText]))
 core.wait(.5)
-print scale(window=myWin, forceChoice=False, drawList = [aPicture], nButtons = 7, scaleLoc=-.6, numberButtons=True, labels = ['less','or','more'])
+print(scale(window=myWin, forceChoice=False, drawList = [aPicture], nButtons = 7, scaleLoc=-.6, numberButtons=True, labels = ['less','or','more']))
 core.wait(.5)
 
 
 someText.setText('question fieldtype - bars')
-print bars(window=myWin,drawList=[someText])
+print(bars(window=myWin,drawList=[someText]))
 core.wait(.5)
 #shrink the picture a bit for this question
 aPicture.setSize(.7)
-print bars(window=myWin,forceChoice=False,nBars=5,width=.7,height=.5,drawList=[aPicture], 
-                    barColors=['red','white','white','white','blue'],labels=['a','b','c','d','e'],yLabels=['bottom','a pretty\nlong label','top'], defaultHeight=[20,30,40,50,60])
+print(bars(window=myWin,forceChoice=False,nBars=5,width=.7,height=.5,drawList=[aPicture], 
+                    barColors=['red','white','white','white','blue'],labels=['a','b','c','d','e'],yLabels=['bottom','a pretty\nlong label','top'], defaultHeight=[20,30,40,50,60]))
 aPicture.setSize(1.0) # restore picture size
 core.wait(.5)
 
 someText.setText('question fieldtype - textInput\nminimal editing capability')
-print textInput(window=myWin, drawList = [someText])
+print(textInput(window=myWin, drawList = [someText]))
 core.wait(.5)
-print textInput(window=myWin, prompt = 'Please describe this picture', drawList = [aPicture], boxTop=-.4)
+print(textInput(window=myWin, prompt = 'Please describe this picture', drawList = [aPicture], boxTop=-.4))
 core.wait(.5)
 
-print textDialog(window=myWin, caption='question fieldtype - textDialog\nThis type of text input is fully editable,\nbut does not allow a stimulus to be drawn.')
+print(textDialog(window=myWin, caption='question fieldtype - textDialog\nThis type of text input is fully editable,\nbut does not allow a stimulus to be drawn.'))
 core.wait(.5)
 
 # say thanks
